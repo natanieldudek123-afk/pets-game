@@ -1,0 +1,13 @@
+# =============================================================================
+# /gra1/app/.htaccess
+# Deny ALL web requests to this directory and everything inside it.
+# config.php, .env, SQL schema, PHP source — none of it should be web-accessible.
+# =============================================================================
+
+Require all denied
+
+# Fallback for older Apache
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>
