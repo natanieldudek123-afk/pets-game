@@ -1,0 +1,49 @@
+# =============================================================================
+# /gra1/.htaccess
+# 1. Block direct web access to the app/ directory (config, src, cron, sql)
+# 2. Serve index.php for bare directory requests
+# =============================================================================
+
+Options -Indexes
+
+# ---------------------------------------------------------------------------
+# Block all web access to the app/ directory
+# config.php, .env, source files and SQL must never be served to the browser.
+# ---------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /gra1/
+
+    # Block app/ directory entirely
+    RewriteRule ^app(/.*)?$ - [F,L]
+</IfModule>
+
+# Also block via FilesMatch as a fallback
+<FilesMatch "\.(env|sql|log)$">
+    Require all denied
+</FilesMatch>
+
+# ---------------------------------------------------------------------------
+# Security headers
+# ---------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# PHP session cookie hardening (if using Apache mod_php)
+# ---------------------------------------------------------------------------
+<IfModule mod_php.c>
+    php_flag session.cookie_httponly On
+    php_flag session.use_strict_mode On
+    php_value session.cookie_samesite Strict
+</IfModule>
+
+# Prevent JS module caching so updates take effect immediately
+<FilesMatch "\.js$">
+    Header set Cache-Control "no-cache, must-revalidate"
+    Header set Pragma "no-cache"
+</FilesMatch>
